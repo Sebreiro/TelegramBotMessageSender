@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using TelegramBotMessageSender.Services.Config;
 using TelegramBotMessageSender.Socks5Proxy;
 
@@ -16,7 +18,7 @@ namespace TelegramBotMessageSender.Services
         private readonly IProxyService _proxyService;
 
         private string _apiUrl = "https://api.telegram.org";
-        private string _apiSendMessagePathTemplate = "bot{0}/sendMessage?chat_id={1}&text={2}";
+        private string _apiSendMessagePathTemplate = "bot{0}/sendMessage";
 
         public SenderService(IOptionsSnapshot<TelegramConfig> config, ILogger<SenderService> logger, IProxyService proxyService)
         {
@@ -33,17 +35,16 @@ namespace TelegramBotMessageSender.Services
             if (message == null)
                 throw new ArgumentException("Message is null");
 
-            var finalUrl = GetFinalUrl(message);
+            var finalUrl = GetFinalUrl();
 
             var client = GetHttpClient();
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, finalUrl);
-
             HttpResponseMessage response;
-
             try
             {
-                response = await client.SendAsync(requestMessage);
+                var content = CreateBodyContent(message);
+
+                response = await client.PostAsync(finalUrl, content);
 
                 if (response.StatusCode != HttpStatusCode.OK)
                     _logger.LogError($"{response}");
@@ -87,14 +88,24 @@ namespace TelegramBotMessageSender.Services
             });
         }
 
-        private string GetFinalUrl(string message)
+        private StringContent CreateBodyContent(string message)
         {
-            if (string.IsNullOrWhiteSpace(message))
-                throw new ArgumentException("Message is null");
+            var messageBodyObj = new
+            {
+                chat_id = _config.ChannelId,
+                text = message
+            };
+            var messageBodyJson = JsonConvert.SerializeObject(messageBodyObj);
 
-            var fullUrl = $"{_apiUrl}/{_apiSendMessagePathTemplate}";
-            var finalUrl = string.Format(fullUrl, _config.BotToken, _config.ChannelId, message);
+            var content = new StringContent(messageBodyJson, Encoding.UTF8, "application/json");
 
+            return content;
+        }
+
+        private string GetFinalUrl()
+        {
+            var templateUrl = $"{_apiUrl}/{_apiSendMessagePathTemplate}";
+            var finalUrl = string.Format(templateUrl, _config.BotToken);
             return finalUrl;
         }
 
