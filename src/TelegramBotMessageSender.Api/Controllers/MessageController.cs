@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TelegramBotMessageSender.Services;
+using TelegramBotMessageSender.WebApi.Attributes;
 using TelegramBotMessageSender.WebApi.Params;
 
 namespace TelegramBotMessageSender.WebApi.Controllers
@@ -28,9 +29,6 @@ namespace TelegramBotMessageSender.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageParam param)
         {
-            if (param == null)
-                throw new ArgumentException($"parameter {nameof(param)} is null");
-
             var result = await _senderService.SendMessage(param.Message);
             if (result == null)
             {
@@ -44,7 +42,7 @@ namespace TelegramBotMessageSender.WebApi.Controllers
 
             return new ObjectResult($"Telegram: {result.ReasonPhrase}")
             {
-                StatusCode=(int)result.StatusCode,
+                StatusCode = (int) result.StatusCode,
             };
         }
 
@@ -53,11 +51,9 @@ namespace TelegramBotMessageSender.WebApi.Controllers
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
+        [ModelValidation]
         public IActionResult SendMessageAsync([FromBody] SendMessageParam param)
         {
-            if (param == null)
-                throw new ArgumentException($"parameter {nameof(param)} is null");
-
             _senderService.SendMessage(param.Message);
 
             return Ok();
