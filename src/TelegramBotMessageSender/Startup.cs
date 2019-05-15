@@ -31,7 +31,10 @@ namespace TelegramBotMessageSender
                 .AddDataAnnotations()
                 .AddJsonFormatters();
 
-            services.Configure<TelegramConfig>(Configuration.GetSection("telegramConfig"));
+            services.AddOptions<TelegramConfig>()
+                .Bind(Configuration.GetSection("telegramConfig"))
+                .ValidateDataAnnotations();
+            
             services.Configure<Socks5Config>(Configuration.GetSection("socks5Config"));
         }
 

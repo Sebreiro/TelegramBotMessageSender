@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -32,8 +33,6 @@ namespace TelegramBotMessageSender.Services
             _channelConfigService = channelConfigService;
 
             _config = config.Value;
-
-            //CheckConfig(_config);
         }
 
         public async Task<HttpResponseMessage> SendMessage(string channelName, string message)
@@ -120,15 +119,5 @@ namespace TelegramBotMessageSender.Services
             var finalUrl = string.Format(templateUrl, _config.BotToken);
             return finalUrl;
         }
-
-        //private bool CheckConfig(TelegramConfig config)
-        //{
-        //    if (string.IsNullOrWhiteSpace(config.BotToken))
-        //        throw new InvalidOperationException("Config BotToken is missing");
-        //    if (string.IsNullOrWhiteSpace(config.ChannelId))
-        //        throw new InvalidOperationException("Config ChannelId is missing");
-
-        //    return true;
-        //}
     }
 }

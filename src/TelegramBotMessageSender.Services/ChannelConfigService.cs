@@ -5,11 +5,11 @@ using TelegramBotMessageSender.Services.Config;
 
 namespace TelegramBotMessageSender.Services
 {
-    public class ChannelConfigConfigService : IChannelConfigService
+    public class ChannelConfigService : IChannelConfigService
     {
         private readonly TelegramConfig _config;
 
-        public ChannelConfigConfigService(IOptionsSnapshot<TelegramConfig> config)
+        public ChannelConfigService(IOptionsSnapshot<TelegramConfig> config)
         {
             _config = config.Value;
         }
