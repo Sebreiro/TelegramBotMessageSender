@@ -10,6 +10,7 @@ namespace TelegramBotMessageSender.Initialization
         {
             builder.RegisterType<SenderService>().As<ISenderService>();
             builder.RegisterType<ProxyService>().As<IProxyService>();
+            builder.RegisterType<ChannelConfigConfigService>().As<IChannelConfigService>();
         }
     }
 }

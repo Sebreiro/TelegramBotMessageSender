@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace TelegramBotMessageSender.WebApi.Attributes
@@ -11,10 +7,9 @@ namespace TelegramBotMessageSender.WebApi.Attributes
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            if (!context.ModelState.IsValid)
-            {
-                context.Result = new BadRequestObjectResult(new ValidationProblemDetails(context.ModelState));
-            }
+            if (context.ModelState.IsValid) return;
+
+            context.Result = new BadRequestObjectResult(new ValidationProblemDetails(context.ModelState));
         }
     }
 }

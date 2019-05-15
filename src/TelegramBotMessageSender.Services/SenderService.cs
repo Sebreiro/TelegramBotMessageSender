@@ -16,24 +16,36 @@ namespace TelegramBotMessageSender.Services
         private readonly ILogger<SenderService> _logger;
         private readonly TelegramConfig _config;
         private readonly IProxyService _proxyService;
+        private readonly IChannelConfigService _channelConfigService;
 
         private string _apiUrl = "https://api.telegram.org";
         private string _apiSendMessagePathTemplate = "bot{0}/sendMessage";
 
-        public SenderService(IOptionsSnapshot<TelegramConfig> config, ILogger<SenderService> logger, IProxyService proxyService)
+        public SenderService(
+            IOptionsSnapshot<TelegramConfig> config, 
+            ILogger<SenderService> logger, 
+            IProxyService proxyService, 
+            IChannelConfigService channelConfigService)
         {
             _logger = logger;
             _proxyService = proxyService;
+            _channelConfigService = channelConfigService;
 
             _config = config.Value;
 
-            CheckConfig(_config);
+            //CheckConfig(_config);
         }
 
-        public async Task<HttpResponseMessage> SendMessage(string message)
+        public async Task<HttpResponseMessage> SendMessage(string channelName, string message)
         {
             if (message == null)
-                throw new ArgumentException("Message is null");
+                throw new ArgumentNullException(nameof(message));
+            if (channelName == null)
+                throw new ArgumentNullException(nameof(channelName));
+
+            var channelId = _channelConfigService.GetChannelId(channelName);
+            if (string.IsNullOrWhiteSpace(channelId))
+                throw new InvalidOperationException($"Config ChannelId with ChannelName {channelName} is missing");
 
             var finalUrl = GetFinalUrl();
 
@@ -42,7 +54,7 @@ namespace TelegramBotMessageSender.Services
             HttpResponseMessage response;
             try
             {
-                var content = CreateBodyContent(message);
+                var content = CreateBodyContent(channelId, message);
 
                 response = await client.PostAsync(finalUrl, content);
 
@@ -88,11 +100,11 @@ namespace TelegramBotMessageSender.Services
             });
         }
 
-        private StringContent CreateBodyContent(string message)
+        private StringContent CreateBodyContent(string channelId, string message)
         {
             var messageBodyObj = new
             {
-                chat_id = _config.ChannelId,
+                chat_id = channelId,
                 text = message
             };
             var messageBodyJson = JsonConvert.SerializeObject(messageBodyObj);
@@ -109,14 +121,14 @@ namespace TelegramBotMessageSender.Services
             return finalUrl;
         }
 
-        private bool CheckConfig(TelegramConfig config)
-        {
-            if (string.IsNullOrWhiteSpace(config.BotToken))
-                throw new InvalidOperationException("Config BotToken is missing");
-            if (string.IsNullOrWhiteSpace(config.ChannelId))
-                throw new InvalidOperationException("Config ChannelId is missing");
+        //private bool CheckConfig(TelegramConfig config)
+        //{
+        //    if (string.IsNullOrWhiteSpace(config.BotToken))
+        //        throw new InvalidOperationException("Config BotToken is missing");
+        //    if (string.IsNullOrWhiteSpace(config.ChannelId))
+        //        throw new InvalidOperationException("Config ChannelId is missing");
 
-            return true;
-        }
+        //    return true;
+        //}
     }
 }

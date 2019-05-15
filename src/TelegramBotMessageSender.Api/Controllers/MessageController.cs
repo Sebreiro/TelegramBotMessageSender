@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -27,9 +26,10 @@ namespace TelegramBotMessageSender.WebApi.Controllers
         /// <param name="param"></param>
         /// <returns></returns>
         [HttpPost]
+        [ModelValidation]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageParam param)
         {
-            var result = await _senderService.SendMessage(param.Message);
+            var result = await _senderService.SendMessage(param.ChannelName, param.Message);
             if (result == null)
             {
                 var errorMessage = "Something bad happened. SendMessage Result is null";
@@ -51,10 +51,11 @@ namespace TelegramBotMessageSender.WebApi.Controllers
         /// </summary>
         /// <param name="param"></param>
         /// <returns></returns>
+        [HttpPost]
         [ModelValidation]
         public IActionResult SendMessageAsync([FromBody] SendMessageParam param)
         {
-            _senderService.SendMessage(param.Message);
+            _senderService.SendMessage(param.ChannelName, param.Message);
 
             return Ok();
         }
