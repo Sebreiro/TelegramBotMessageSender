@@ -7,12 +7,10 @@ ASP.<span></span>NET Core 2.x application that receives messages via post reques
 
  Post request with message:  
    - Request endpoint: `http://<host>:<port>/api/Message/SendMessage`  
-   - Request body: `{message:"TestMessage"}`  
+   - Request body: `{channelName: "ChannelName", message:"TestMessage"}`  (see [Config section](#Config))
    - Request Header parameter `Content-Type:	application/json`
 
  
-
-
 Config
 ---
 _appsettings.json_  - main config and it's requeired  
@@ -30,7 +28,16 @@ File structure:
  "telegramConfig": {
     "useSocks5Proxy": true,    
     "botToken": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "channelId": "-00000000000"
+    "channels": [
+      {
+        "channelName": "ChannelName1",
+        "channelId": "-000000001"
+      },
+      {
+        "channelName": "ChannelName2",
+        "channelId": "-000000002"
+      }
+    ]
   },
   "socks5Config": {
     "host": "<ip>",
@@ -40,14 +47,17 @@ File structure:
     "password": "password"
   },
 ~~~
-`botToken` - telegram bot token. It's can be obtained via @BotFather.   
+  * `botToken` - telegram bot token. It's can be obtained via @BotFather.   
 More information: https://core.telegram.org/bots
 
-`channelId` - telegram channel/chat id where bot will send messages  
-In order to get the group id:
-* Add the telegram Bot to the group
-* Get the list of updtaes for your Bot: `https://api.telegram.org/bot<YourBOTToken>/getUpdates`. 
-* More information: https://stackoverflow.com/questions/32423837
+  * `channels` - array of `channelName` - `channelId` mappings.  
 
-`socks5Config` - just socks5 proxy settings, in case the telegram API is blocked  
+    * `channelName` - fictional "channel name" that comes with a post request and maps to the telegram channel id  
+    * `channelId` - telegram group/channel id to which the bot will send messages  
+     In order to get the telegram group/channel id:
+      * Add the telegram Bot to the group
+      * Get the list of updtaes for your Bot: `https://api.telegram.org/bot<YourBOTToken>/getUpdates`. 
+      * More information: https://stackoverflow.com/questions/32423837
+
+  * `socks5Config` - just socks5 proxy settings, in case the telegram API is blocked  
 
